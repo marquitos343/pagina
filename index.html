@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Importados — Vapes | Catálogo + Carrito</title>
+  <meta name="description" content="Catálogo de productos importados (vapes) con carrito y checkout por WhatsApp. Estilo rojo/negro minimalista." />
+  <style>
+    :root{
+      --bg:#0b0b0c;       /* negro profundo */
+      --card:#141418;     /* gris muy oscuro */
+      --primary:#e3262f;  /* rojo marca */
+      --text:#f4f4f5;     /* casi blanco */
+      --muted:#9b9ba1;
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:linear-gradient(180deg,#0a0a0b 0%, #0f0f13 100%);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;}
+    a{color:inherit;text-decoration:none}
+
+    /* Header */
+    header{position:sticky;top:0;z-index:50;background:rgba(10,10,12,.8);backdrop-filter:blur(8px);border-bottom:1px solid #1f1f24}
+    .nav{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;}
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand-badge{width:38px;height:38px;border-radius:12px;background:radial-gradient(120% 120% at 20% 20%, #ff5a5f 0%, var(--primary) 40%, #7a0910 100%);display:grid;place-items:center;box-shadow:var(--shadow)}
+    .brand-badge svg{width:20px;height:20px}
+    .brand h1{font-size:18px;margin:0;letter-spacing:.4px}
+    .menu{display:flex;gap:16px}
+    .menu a{opacity:.9}
+    .menu a:hover{opacity:1;color:var(--primary)}
+
+    /* Hero */
+    .hero{max-width:1100px;margin:28px auto 10px;display:grid;grid-template-columns:1.2fr .8fr;gap:22px;padding:0 18px}
+    .hero-card{background:linear-gradient(180deg,#15151a 0%, #111116 100%);border:1px solid #22222a;border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+    .hero-title{font-size:28px;margin:6px 0 8px}
+    .hero-sub{color:var(--muted);margin:0 0 14px}
+    .hero-cta{display:flex;gap:12px;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid #2a2a32;background:#19191f;padding:10px 14px;border-radius:14px;cursor:pointer;font-weight:600}
+    .btn.primary{background:linear-gradient(180deg,#ff4040 0%, var(--primary) 70%);border-color:#7a0b10;color:white}
+    .btn:hover{transform:translateY(-1px)}
+
+    /* Grid */
+    .wrap{max-width:1100px;margin:0 auto;padding:0 18px}
+    .tools{display:flex;gap:12px;align-items:center;justify-content:space-between;margin:20px 0}
+    .search{flex:1;display:flex;gap:10px}
+    .search input{flex:1;background:#121217;border:1px solid #23232b;border-radius:12px;padding:10px 12px;color:var(--text)}
+    .search select{background:#121217;border:1px solid #23232b;border-radius:12px;padding:10px 12px;color:var(--text)}
+
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    @media (max-width:920px){.hero{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:560px){.grid{grid-template-columns:1fr}}
+
+    .card{background:linear-gradient(180deg,#141419 0%,#101015 100%);border:1px solid #222230;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+    .img{aspect-ratio: 4/3;display:grid;place-items:center;background:radial-gradient(120% 120% at 10% 10%, #2a0b0f 0%, #1a0a0c 50%, #0f0f13 100%)}
+    .img svg{opacity:.9}
+    .info{padding:14px 14px 10px}
+    .title{font-weight:700;margin:2px 0 6px}
+    .price{font-weight:800;font-size:18px}
+    .muted{color:var(--muted);font-size:13px}
+    .actions{display:flex;gap:10px;align-items:center;padding:12px 14px}
+    .qty{background:#101016;border:1px solid #24242d;border-radius:12px;display:inline-flex;align-items:center}
+    .qty button{background:transparent;border:none;color:var(--text);padding:6px 10px;font-size:16px;cursor:pointer}
+    .qty span{min-width:28px;display:inline-block;text-align:center}
+
+    .add{margin-left:auto}
+
+    /* Cart Drawer */
+    .cart-toggle{position:fixed;right:16px;bottom:16px;z-index:60}
+    .fab{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,#ff4040 0%, var(--primary) 70%);border:1px solid #7a0b10;box-shadow:var(--shadow);cursor:pointer}
+    .fab span{font-weight:800}
+
+    .drawer{position:fixed;inset:0;pointer-events:none}
+    .drawer.open{pointer-events:auto}
+    .backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45);opacity:0;transition:.2s}
+    .drawer.open .backdrop{opacity:1}
+    .panel{position:absolute;right:0;top:0;height:100%;width:min(420px,92vw);background:#0e0e12;border-left:1px solid #24242d;transform:translateX(100%);transition:.25s;display:flex;flex-direction:column}
+    .drawer.open .panel{transform:translateX(0)}
+    .panel header{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid #22222a;background:#111116}
+    .panel h3{margin:0;font-size:18px}
+    .cart-list{flex:1;overflow:auto;padding:10px}
+    .cart-item{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px;border:1px solid #22222a;border-radius:12px;background:#121217;margin-bottom:10px}
+    .cart-item .thumb{width:52px;height:52px;border-radius:10px;background:#1a1a21;display:grid;place-items:center}
+    .cart-item .name{font-weight:600}
+    .cart-item .row{display:flex;gap:8px;align-items:center}
+    .cart-item .remove{opacity:.8;cursor:pointer}
+    .summary{border-top:1px solid #22222a;padding:14px 16px;background:#111116}
+    .summary .line{display:flex;justify-content:space-between;margin:6px 0}
+    .summary .total{font-size:20px;font-weight:800}
+    .checkout{display:grid;gap:10px;margin-top:10px}
+    .pay-icons{display:flex;gap:10px;align-items:center;flex-wrap:wrap;opacity:.95}
+    .chip{border:1px solid #272732;background:#14141a;border-radius:12px;padding:6px 10px;font-size:13px}
+
+    /* Sections */
+    section{padding:26px 0}
+    .section-title{font-size:22px;margin:0 0 12px}
+
+    /* Reviews */
+    .reviews{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    @media (max-width:920px){.reviews{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:560px){.reviews{grid-template-columns:1fr}}
+    .review{background:#121217;border:1px solid #22222a;border-radius:16px;padding:14px}
+    .review .who{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+    .avatar{width:36px;height:36px;border-radius:50%;background:#1d1d24;display:grid;place-items:center;font-weight:800}
+
+    footer{border-top:1px solid #23232b;padding:18px 0;margin-top:20px;background:#0b0b0f}
+    .foot{max-width:1100px;margin:0 auto;padding:0 18px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+    .social{display:flex;gap:10px;align-items:center}
+    .badge{display:inline-flex;gap:8px;align-items:center;border:1px solid #24242d;background:#121217;border-radius:999px;padding:8px 12px}
+    .tag{font-size:12px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav">
+      <div class="brand">
+        <div class="brand-badge" aria-hidden>
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7 19c0-3 2-5 5-5s5 2 5 5" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M10 5c0-1.1.9-2 2-2s2 .9 2 2v3a2 2 0 1 1-4 0V5Z" fill="white"/>
+          </svg>
+        </div>
+        <h1>Importados • Vapes</h1>
+      </div>
+      <nav class="menu">
+        <a href="#productos">Productos</a>
+        <a href="#resenas">Reseñas</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-card">
+      <div class="tag">Edición limitada • Stock real</div>
+      <h2 class="hero-title">Lanzamiento con precio especial</h2>
+      <p class="hero-sub">Productos importados seleccionados. Estética roja/negra, atención rápida por DM. Agregá al carrito y finalizá por WhatsApp.</p>
+      <div class="hero-cta">
+        <a class="btn primary" href="#productos">Ver catálogo</a>
+        <a class="btn" id="igLink" target="_blank" rel="noopener">Instagram</a>
+      </div>
+    </div>
+    <div class="hero-card">
+      <h3 style="margin:0 0 10px">Medios de pago</h3>
+      <div class="pay-icons">
+        <span class="chip">Mercado Pago</span>
+        <span class="chip">Transferencia</span>
+        <span class="chip">Efectivo</span>
+        <span class="chip">Retiro/Envío rápido</span>
+      </div>
+      <p class="muted" style="margin-top:10px">* Podés cambiar/editar estos textos en el HTML.</p>
+    </div>
+  </section>
+
+  <main class="wrap" id="productos">
+    <div class="tools">
+      <div class="search">
+        <input id="q" placeholder="Buscar producto…" />
+        <select id="sort">
+          <option value="default">Ordenar</option>
+          <option value="price-asc">Precio: menor a mayor</option>
+          <option value="price-desc">Precio: mayor a menor</option>
+        </select>
+      </div>
+      <div>
+        <button class="btn" id="openCart">🛒 Ver carrito</button>
+      </div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+  </main>
+
+  <section class="wrap" id="resenas">
+    <h3 class="section-title">Reseñas de clientes</h3>
+    <div class="reviews">
+      <article class="review">
+        <div class="who"><div class="avatar">J</div><div><strong>Juan P.</strong><div class="muted">Campana</div></div></div>
+        <p>Entrega rápida y producto original. Volvería a comprar 👌</p>
+      </article>
+      <article class="review">
+        <div class="who"><div class="avatar">M</div><div><strong>Mica S.</strong><div class="muted">San Martín</div></div></div>
+        <p>Me guardaron el color que quería. Atención 10/10.</p>
+      </article>
+      <article class="review">
+        <div class="who"><div class="avatar">F</div><div><strong>Fede R.</strong><div class="muted">Caseros</div></div></div>
+        <p>Precio de lanzamiento posta, aprovechen. Todo de 10.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="wrap" id="contacto">
+    <h3 class="section-title">Contacto</h3>
+    <div class="social">
+      <a class="badge" id="waLink" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 12a8 8 0 1 1-3.3-6.5L21 3l-2.1 4.5A8 8 0 0 1 20 12Z" stroke="currentColor" stroke-width="1.5"/></svg>
+        <span>WhatsApp</span>
+      </a>
+      <a class="badge" id="igLink2" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.5"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg>
+        <span>Instagram</span>
+      </a>
+    </div>
+    <p class="muted" style="margin-top:8px">Actualizá tus enlaces de contacto en la configuración debajo.</p>
+  </section>
+
+  <footer>
+    <div class="foot">
+      <div class="tag">© <span id="year"></span> Importados Capurro — Todos los derechos reservados</div>
+      <div class="tag">Hecho con ❤ en Buenos Aires</div>
+    </div>
+  </footer>
+
+  <!-- Floating Cart Button -->
+  <div class="cart-toggle">
+    <button class="fab" id="fab">🛒</button>
+  </div>
+
+  <!-- Cart Drawer -->
+  <div class="drawer" id="drawer" aria-hidden="true">
+    <div class="backdrop" id="backdrop"></div>
+    <aside class="panel" role="dialog" aria-label="Carrito">
+      <header>
+        <h3>Tu carrito</h3>
+        <button class="btn" id="closeDrawer">✕</button>
+      </header>
+      <div class="cart-list" id="cartList"></div>
+      <div class="summary">
+        <div class="line"><span>Subtotal</span><strong id="subtotal">$0</strong></div>
+        <div class="line"><span>Envío</span><span class="muted">A coordinar</span></div>
+        <div class="line total"><span>Total</span><span id="total">$0</span></div>
+        <div class="checkout">
+          <button class="btn primary" id="checkoutWA">Finalizar por WhatsApp</button>
+          <a class="btn" id="checkoutIG" target="_blank" rel="noopener">Consultar por Instagram</a>
+          <div class="pay-icons">
+            <span class="chip">Mercado Pago</span>
+            <span class="chip">Transferencia</span>
+            <span class="chip">Efectivo</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    // ====== CONFIGURACIÓN RÁPIDA ======
+    const CONFIG = {
+      instagramUser: "importadoscapurro", // TODO: cambiá por tu @
+      whatsappNumber: "5491100000000",    // TODO: número en formato internacional: 54 + área + número (sin + ni 0)
+      currency: new Intl.NumberFormat('es-AR', { style:'currency', currency:'ARS' })
+    };
+
+    // ====== LISTA DE PRODUCTOS (editá acá) ======
+    const PRODUCTS = [
+      { id: 'ign400', name: 'Ignite V400', price: 25000, stock: 2, image: null, desc: 'Edición limitada, importado.' },
+      { id: 'ignv50', name: 'Ignite V50',  price: 28000, stock: 1, image: null, desc: 'Nueva llegada.' },
+      { id: 'elf600', name: 'Elf Bar 600', price: 26000, stock: 1, image: null, desc: 'Sabor frutal.' },
+      { id: 'voz500', name: 'Vozol 5000',  price: 27000, stock: 0, image: null, desc: 'Próximamente.' },
+    ];
+
+    // ====== ESTADO ======
+    const state = {
+      products: PRODUCTS,
+      cart: JSON.parse(localStorage.getItem('cart:vapes')||'{}'),
+      q: '',
+      sort: 'default'
+    };
+
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => document.querySelectorAll(sel);
+
+    // ====== UTIL ======
+    const money = n => CONFIG.currency.format(n);
+
+    function placeholderSVG(){
+      return `\n        <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">\n          <defs>\n            <linearGradient id="g" x1="0" x2="1">\n              <stop offset="0%" stop-color="#2a0b0f"/>\n              <stop offset="100%" stop-color="#0f0f13"/>\n            </linearGradient>\n          </defs>\n          <rect width="200" height="150" rx="14" fill="url(#g)"/>\n          <g fill="#ffffff" fill-opacity="0.9">\n            <rect x="88" y="38" width="24" height="44" rx="6"/>\n            <rect x="92" y="28" width="16" height="10" rx="3"/>\n            <circle cx="100" cy="104" r="4"/>\n          </g>\n        </svg>`;
+    }
+
+    // ====== RENDER PRODUCTOS ======
+    function renderProducts(){
+      const grid = $('#grid');
+      let items = [...state.products];
+      if(state.q){
+        const q = state.q.toLowerCase();
+        items = items.filter(p => p.name.toLowerCase().includes(q) || (p.desc||'').toLowerCase().includes(q));
+      }
+      if(state.sort==='price-asc') items.sort((a,b)=>a.price-b.price);
+      if(state.sort==='price-desc') items.sort((a,b)=>b.price-a.price);
+
+      grid.innerHTML = items.map(p=>{
+        const inCartQty = state.cart[p.id]?.qty || 0;
+        const available = Math.max(0,(p.stock||0)-inCartQty);
+        return `
+          <article class="card" data-id="${p.id}">
+            <div class="img">${p.image ? `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover"/>` : placeholderSVG()}</div>
+            <div class="info">
+              <div class="title">${p.name}</div>
+              <div class="muted">${p.desc||''}</div>
+              <div class="price">${money(p.price)}</div>
+              <div class="muted">${available>0 ? `Stock: ${available}` : '<span style="color:#ff6b6b">Sin stock</span>'}</div>
+            </div>
+            <div class="actions">
+              <div class="qty" data-qty>
+                <button data-dec>-</button>
+                <span>${inCartQty}</span>
+                <button data-inc>+</button>
+              </div>
+              <button class="btn add" data-add ${available===0 ? 'disabled' : ''}>Agregar</button>
+            </div>
+          </article>`
+      }).join('');
+    }
+
+    // ====== CARRITO ======
+    function saveCart(){ localStorage.setItem('cart:vapes', JSON.stringify(state.cart)); }
+
+    function cartTotals(){
+      let subtotal = 0;
+      Object.values(state.cart).forEach(({price, qty}) => subtotal += price * qty);
+      return { subtotal, total: subtotal };
+    }
+
+    function renderCart(){
+      const list = $('#cartList');
+      const items = Object.values(state.cart);
+      if(items.length===0){ list.innerHTML = `<p class="muted" style="padding:10px">Tu carrito está vacío.</p>`; }
+      else{
+        list.innerHTML = items.map(it=>`
+          <div class="cart-item" data-id="${it.id}">
+            <div class="thumb">🧊</div>
+            <div>
+              <div class="name">${it.name}</div>
+              <div class="muted">${money(it.price)}</div>
+              <div class="row">
+                <div class="qty" data-qty>
+                  <button data-dec>-</button>
+                  <span>${it.qty}</span>
+                  <button data-inc>+</button>
+                </div>
+                <span class="muted">| Subtotal: <strong>${money(it.price*it.qty)}</strong></span>
+              </div>
+            </div>
+            <div class="remove" data-remove title="Quitar">🗑️</div>
+          </div>`).join('');
+      }
+      const {subtotal,total} = cartTotals();
+      $('#subtotal').textContent = money(subtotal);
+      $('#total').textContent = money(total);
+    }
+
+    function addToCart(prod, qty){
+      const current = state.cart[prod.id]?.qty || 0;
+      const newQty = Math.min((prod.stock||0), current + qty);
+      state.cart[prod.id] = { id: prod.id, name: prod.name, price: prod.price, qty: newQty };
+      if(newQty===0) delete state.cart[prod.id];
+      saveCart();
+      renderProducts();
+      renderCart();
+    }
+
+    // ====== CHECKOUT ======
+    function cartMessage(){
+      const items = Object.values(state.cart);
+      if(items.length===0) return 'Hola! Quiero consultar por el catálogo. 🙂';
+      const lines = items.map(it => `• ${it.name} x${it.qty} — ${money(it.price*it.qty)}`);
+      const { total } = cartTotals();
+      return `Hola! Quiero finalizar este pedido:%0A%0A${lines.join('%0A')}%0A%0ATotal: ${money(total)}%0A%0A¿Disponibilidad y formas de pago?`;
+    }
+
+    function openWhatsApp(){
+      const msg = cartMessage();
+      const url = `https://wa.me/${CONFIG.whatsappNumber}?text=${msg}`;
+      window.open(url, '_blank');
+    }
+
+    // ====== EVENTOS UI ======
+    function openDrawer(open=true){
+      const d = $('#drawer');
+      d.classList.toggle('open', !!open);
+      d.setAttribute('aria-hidden', open? 'false':'true');
+    }
+
+    function bindEvents(){
+      // Search + sort
+      $('#q').addEventListener('input', e=>{ state.q = e.target.value.trim(); renderProducts(); });
+      $('#sort').addEventListener('change', e=>{ state.sort = e.target.value; renderProducts(); });
+
+      // Grid interactions (event delegation)
+      $('#grid').addEventListener('click', e=>{
+        const card = e.target.closest('.card');
+        if(!card) return;
+        const id = card.getAttribute('data-id');
+        const prod = state.products.find(p=>p.id===id);
+
+        if(e.target.matches('[data-add]')){
+          addToCart(prod, 1);
+        }
+        if(e.target.matches('[data-inc]')){
+          addToCart(prod, 1);
+        }
+        if(e.target.matches('[data-dec]')){
+          addToCart(prod, -1);
+        }
+      });
+
+      // Cart drawer
+      $('#fab').onclick = ()=>{ openDrawer(true); };
+      $('#openCart').onclick = ()=>{ openDrawer(true); };
+      $('#closeDrawer').onclick = ()=>{ openDrawer(false); };
+      $('#backdrop').onclick = ()=>{ openDrawer(false); };
+
+      // Cart actions
+      $('#cartList').addEventListener('click', e=>{
+        const item = e.target.closest('.cart-item');
+        if(!item) return;
+        const id = item.getAttribute('data-id');
+        const prod = state.products.find(p=>p.id===id);
+        if(e.target.matches('[data-inc]')) addToCart(prod, 1);
+        if(e.target.matches('[data-dec]')) addToCart(prod, -1);
+        if(e.target.matches('[data-remove]')){ delete state.cart[id]; saveCart(); renderProducts(); renderCart(); }
+      });
+
+      // Checkout
+      $('#checkoutWA').onclick = openWhatsApp;
+      $('#checkoutIG').onclick = ()=>{
+        window.open(`https://instagram.com/${CONFIG.instagramUser}`,'_blank');
+      };
+
+      // Header/Contact links
+      $('#igLink').href = `https://instagram.com/${CONFIG.instagramUser}`;
+      $('#igLink2').href = `https://instagram.com/${CONFIG.instagramUser}`;
+      $('#waLink').href = `https://wa.me/${CONFIG.whatsappNumber}`;
+
+      // Year
+      $('#year').textContent = new Date().getFullYear();
+    }
+
+    // ====== INIT ======
+    renderProducts();
+    renderCart();
+    bindEvents();
+  </script>
+</body>
+</html>
